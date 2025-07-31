@@ -2,10 +2,9 @@
 
 import subprocess
 import pkg_resources
-import sys
 import argparse
 
-BLOCKED_PACKAGES = {'pip', 'setuptools'}
+BLOCKED_PACKAGES = {'pip', 'setuptools', 'autoremove'}
 
 
 def get_installed_distributions() -> dict[str, pkg_resources.DistInfoDistribution]:
