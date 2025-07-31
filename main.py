@@ -1,5 +1,6 @@
 import subprocess
 import pkg_resources
+import sys
 
 BLOCKED_PACKAGES = {'pip', 'setuptools'}
 
@@ -43,27 +44,36 @@ def find_depenencies_to_uninstall(targets: list):
         for i in packs_to_delete
         if i[0] not in packs_not_to_delete
     ]
-    # print('Delete: ', packs_to_delete)
     
     return [pack for (pack, _) in packs_to_delete]
 
-def uninstall_packages(packages):
+def uninstall_packages(packages: list[str], dry_run:bool):
     if not packages:
         print("No packages to uninstall.")
         return
-    print(f"Uninstalling: {', '.join(packages)}")
-    subprocess.run(["pip", "uninstall", "-y", *packages], check=True)
+    if dry_run:
+        print(f"[Dry run] Would uninstall: {', '.join(packages)}")
+    else:
+        subprocess.run(["pip", "uninstall", "-y", *packages], check=True)
 
-def autoremove(target_packages: str):
+
+def autoremove(target_packages: list[str], dry_run:bool=False):
     target_packages = [p.lower() for p in target_packages]
     if set(target_packages).intersection(BLOCKED_PACKAGES):
         raise Exception(f"Cant uninstall the following packages: {', '.join(set(target_packages).intersection(BLOCKED_PACKAGES))}")
     uninstall = find_depenencies_to_uninstall(target_packages)
-    uninstall_packages(uninstall)
+    uninstall_packages(uninstall, dry_run)
 
 if __name__ == "__main__":
-    import sys
-    if len(sys.argv) < 2:
-        print("Usage: python autoremove.py <package1> [package2 ...]")
+    args = sys.argv[1:]
+    dry_run = False
+
+    if '--dry-run' in args:
+        dry_run = True
+        args.remove('--dry-run')
+
+    if not args:
+        print("Usage: python autoremove.py <package1> [package2 ...] [--dry-run]")
         sys.exit(1)
-    autoremove(sys.argv[1:])
+
+    autoremove(args, dry_run=dry_run)
