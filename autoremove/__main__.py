@@ -1,6 +1,9 @@
+# autoremove/__main__.py
+
 import subprocess
 import pkg_resources
 import sys
+import argparse
 
 BLOCKED_PACKAGES = {'pip', 'setuptools'}
 
@@ -64,16 +67,13 @@ def autoremove(target_packages: list[str], commit:bool=False):
     uninstall = find_depenencies_to_uninstall(target_packages)
     uninstall_packages(uninstall, commit)
 
+def main():
+    parser = argparse.ArgumentParser(description="Autoremove Python packages and its unused dependencies.")
+    parser.add_argument("packages", nargs="+", help="Target packages to uninstall.")
+    parser.add_argument("--commit", action="store_true", help="Only show what would be uninstalled.")
+    args = parser.parse_args()
+
+    autoremove(args.packages, commit=args.commit)
+
 if __name__ == "__main__":
-    args = sys.argv[1:]
-    commit = False
-
-    if '--commit' in args:
-        commit = True
-        args.remove('--commit')
-
-    if not args:
-        print("Usage: python autoremove.py <package1> [package2 ...] [--commit]")
-        sys.exit(1)
-
-    autoremove(args, commit=commit)
+    main()
