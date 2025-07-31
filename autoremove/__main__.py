@@ -47,33 +47,33 @@ def find_depenencies_to_uninstall(targets: list):
     
     return [pack for (pack, _) in packs_to_delete]
 
-def uninstall_packages(packages: list[str], dry_run:bool):
+def uninstall_packages(packages: list[str], commit:bool):
     if not packages:
-        print("No packages to uninstall.")
         return
-    if dry_run:
+    if not commit:
+        print(f"[Dry run] To delete, use --commit")
         print(f"[Dry run] Would uninstall: {', '.join(packages)}")
     else:
         subprocess.run(["pip", "uninstall", "-y", *packages], check=True)
 
 
-def autoremove(target_packages: list[str], dry_run:bool=False):
+def autoremove(target_packages: list[str], commit:bool=False):
     target_packages = [p.lower() for p in target_packages]
     if set(target_packages).intersection(BLOCKED_PACKAGES):
         raise Exception(f"Cant uninstall the following packages: {', '.join(set(target_packages).intersection(BLOCKED_PACKAGES))}")
     uninstall = find_depenencies_to_uninstall(target_packages)
-    uninstall_packages(uninstall, dry_run)
+    uninstall_packages(uninstall, commit)
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    dry_run = False
+    commit = False
 
-    if '--dry-run' in args:
-        dry_run = True
-        args.remove('--dry-run')
+    if '--commit' in args:
+        commit = True
+        args.remove('--commit')
 
     if not args:
-        print("Usage: python autoremove.py <package1> [package2 ...] [--dry-run]")
+        print("Usage: python autoremove.py <package1> [package2 ...] [--commit]")
         sys.exit(1)
 
-    autoremove(args, dry_run=dry_run)
+    autoremove(args, commit=commit)
