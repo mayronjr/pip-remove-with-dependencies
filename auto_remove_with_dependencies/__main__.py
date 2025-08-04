@@ -72,7 +72,7 @@ def autoremove(target_packages: list[str], commit:bool=False):
 def main():
     parser = argparse.ArgumentParser(description="Autoremove Python packages and its unused dependencies.")
     parser.add_argument("packages", nargs="+", help="Target packages to uninstall.")
-    parser.add_argument("--commit", action="store_true", help="Only show what would be uninstalled.")
+    parser.add_argument("--commit", action="store_true", help="Actually uninstall. If omitted, just shows what would be removed.")
     args = parser.parse_args()
 
     autoremove(args.packages, commit=args.commit)
