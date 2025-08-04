@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="auto_remove_with_dependencies",
-    version="0.2.0",
+    version="0.2.1",
     author="Mayron Moura Soares Junior",
     license="MIT",
     author_email="mayronjunior5@gmail.com",
