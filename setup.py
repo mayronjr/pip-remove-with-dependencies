@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="auto_remove_with_dependencies",
-    version="0.1.2",
+    version="0.1.3",
     author="Mayron Moura Soares Junior",
     author_email="mayronjunior5@gmail.com",
     description="A pip auxiliar that uninstall the packages passed and its unused dependencies.",
@@ -13,7 +13,7 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "auto_remove_with_dependencies = autoauto_remove_with_dependenciesremove.__main__:main"
+            "auto_remove_with_dependencies = auto_remove_with_dependencies.__main__:main"
         ]
     },
     python_requires=">=3.9",
