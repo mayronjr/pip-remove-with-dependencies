@@ -1,26 +1,27 @@
 # auto_remove_with_dependencies/__main__.py
-BLOCKED_PACKAGES = {'pip', 'setuptools', 'autoremove'}
+from .constants import BLOCKED_PACKAGES
 
 import subprocess
-import pkg_resources
 
-def print_verbose(*values:object, verbose:bool=False):
+from importlib.metadata import Distribution, distributions
+from packaging.requirements import Requirement
+
+def print_verbose(*values, verbose:bool=False):
     if verbose:
         print(*values)
 
-def get_installed_distributions() -> dict[str, pkg_resources.DistInfoDistribution]:
-    working_set = pkg_resources.working_set
-    if not working_set or not hasattr(working_set, '__iter__'):
-        return {}
+def get_installed_distributions() -> dict[str, Distribution]:
     return {
-        dist.project_name.lower(): dist
-        for dist in list(working_set)
+        dist.metadata['Name'].lower(): dist
+        for dist in distributions()
+        if 'Name' in dist.metadata
     }
 
-def get_dependencies(dist: pkg_resources.DistInfoDistribution) -> set[str]:
+def get_dependencies(dist: Distribution) -> set[str]:
+    requires = dist.requires or []
     return {
-        dist.project_name.lower()
-        for dist in dist.requires()
+        Requirement(r).name.lower()
+        for r in requires
     }
 
 def find_depenencies_to_uninstall(targets: list, verbose:bool=False):

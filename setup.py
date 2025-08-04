@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="auto_remove_with_dependencies",
-    version="0.2.1",
+    version="0.3.0",
     author="Mayron Moura Soares Junior",
     license="MIT",
     author_email="mayronjunior5@gmail.com",
@@ -12,6 +12,9 @@ setup(
     long_description_content_type="text/markdown",
     # url="No git yet",
     packages=find_packages(),
+    install_requires=[
+        "packaging>=20.0",
+    ],
     entry_points={
         "console_scripts": [
             "auto_remove = auto_remove_with_dependencies.__main__:main"
@@ -26,8 +29,5 @@ setup(
         "Programming Language :: Python :: 3.13",
         "License :: OSI Approved :: MIT License",  # or other license
         "Operating System :: OS Independent",
-    ],
-    install_requires=[
-        "setuptools",
     ],
 )

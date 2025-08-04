@@ -1,1 +1,1 @@
-BLOCKED_PACKAGES = {'pip', 'setuptools', 'autoremove'}
+BLOCKED_PACKAGES = {'pip', 'setuptools', 'auto_remove_with_dependencies'}
