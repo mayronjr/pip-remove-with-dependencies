@@ -10,7 +10,7 @@ setup(
     description="A pip auxiliar that uninstall the packages passed and its unused dependencies.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="No git yet",
+    # url="No git yet",
     packages=find_packages(),
     entry_points={
         "console_scripts": [
