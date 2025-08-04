@@ -5,6 +5,7 @@ setup(
     name="auto_remove_with_dependencies",
     version="0.1.3",
     author="Mayron Moura Soares Junior",
+    license="MIT",
     author_email="mayronjunior5@gmail.com",
     description="A pip auxiliar that uninstall the packages passed and its unused dependencies.",
     long_description=open("README.md").read(),
@@ -23,7 +24,7 @@ setup(
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
-        # "License :: OSI Approved :: MIT License",  # or other license
+        "License :: OSI Approved :: MIT License",  # or other license
         "Operating System :: OS Independent",
     ],
 )
