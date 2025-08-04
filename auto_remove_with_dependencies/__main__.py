@@ -8,9 +8,12 @@ BLOCKED_PACKAGES = {'pip', 'setuptools', 'autoremove'}
 
 
 def get_installed_distributions() -> dict[str, pkg_resources.DistInfoDistribution]:
+    working_set = pkg_resources.working_set
+    if not working_set or not hasattr(working_set, '__iter__'):
+        return {}
     return {
         dist.project_name.lower(): dist
-        for dist in pkg_resources.working_set
+        for dist in list(working_set)
     }
 
 def get_dependencies(dist: pkg_resources.DistInfoDistribution) -> set[str]:
