@@ -1,8 +1,9 @@
-# autoremove/__main__.py
+# auto_remove_with_dependencies/__main__.py
 
 import subprocess
 import pkg_resources
 import argparse
+from . import __version__  # importa a versão
 
 BLOCKED_PACKAGES = {'pip', 'setuptools', 'autoremove'}
 
@@ -72,8 +73,18 @@ def autoremove(target_packages: list[str], commit:bool=False):
 def main():
     parser = argparse.ArgumentParser(description="Autoremove Python packages and its unused dependencies.")
     parser.add_argument("packages", nargs="+", help="Target packages to uninstall.")
-    parser.add_argument("--commit", action="store_true", help="Actually uninstall. If omitted, just shows what would be removed.")
+    parser.add_argument("-c", "--commit", action="store_true", help="Actually uninstall. If omitted, just shows what would be removed.")
+    
+    parser.add_argument(
+        "-v", "--version",
+        action="version",
+        version=f"%(prog)s {__version__}"
+    )
     args = parser.parse_args()
+
+    if not args.packages:
+        parser.print_help()
+        return
 
     autoremove(args.packages, commit=args.commit)
 
