@@ -27,4 +27,7 @@ setup(
         "License :: OSI Approved :: MIT License",  # or other license
         "Operating System :: OS Independent",
     ],
+    install_requires=[
+        "setuptools",
+    ],
 )
