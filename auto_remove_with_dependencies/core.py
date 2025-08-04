@@ -10,23 +10,30 @@ def print_verbose(*values, verbose:bool=False):
     if verbose:
         print(*values)
 
-def get_installed_distributions() -> dict[str, Distribution]:
-    return {
-        dist.metadata['Name'].lower(): dist
-        for dist in distributions()
+def get_installed_distributions() -> dict[str, tuple[set[str], set[str]]]:
+    dists = distributions()
+    dists = {
+        dist.metadata['Name'].lower(): dist.requires or []
+        for dist in dists
         if 'Name' in dist.metadata
     }
-
-def get_dependencies(dist: Distribution) -> set[str]:
-    requires = dist.requires or []
-    return {
-        Requirement(r).name.lower()
-        for r in requires
+    dists = {
+        dist_name: {Requirement(d).name.lower() for d in dist_requiments}.intersection(dists.keys())
+        for dist_name, dist_requiments in dists.items()
     }
+    new_dists = {}
+    for modulo, requeriments in dists.items():
+        dependentes = {
+            m
+            for m, r in dists.items()
+            if modulo in r
+        }
+        new_dists[modulo] = (requeriments, dependentes)
+    return new_dists
 
 def find_depenencies_to_uninstall(targets: list, verbose:bool=False):
     dists_dict = get_installed_distributions()
-    packs_to_delete = set()
+    packs_to_delete = []
     packs_to_validate = [t for t in targets]
     print_verbose(f"Receive the following list of Modules to uninstall with dependencies:", ', '.join(packs_to_validate), verbose=verbose)
     while packs_to_validate:
@@ -41,34 +48,25 @@ def find_depenencies_to_uninstall(targets: list, verbose:bool=False):
             else:
                 print_verbose(f"  Skipping Uninstall of Module {pack} because its not installed.", verbose=(verbose or pack in targets))
             continue
-        dist = dists_dict[pack]
-        dependencies = get_dependencies(dist)
-        if len(dependencies) != 0:
-            print_verbose(f"  Found the following dependencies:", ", ".join(dependencies), verbose=verbose)
+        requirements = dists_dict[pack][0]
+        if len(requirements) != 0:
+            print_verbose(f"  Found the following requirements:", ", ".join(requirements), verbose=verbose)
             print_verbose(f"  Adding them to the validation List", verbose=verbose)
-        packs_to_validate += dependencies
-        packs_to_delete.add(pack)
+        packs_to_validate += (requirements - set(packs_to_validate))
+        packs_to_delete.append(pack)
     print_verbose("Dependencies analysed. Verifying what can be uninstalled.", verbose=verbose)
-    packs_not_to_delete = {
-        dep
-        for p, k in dists_dict.items()
-        if p not in packs_to_delete
-        for dep in get_dependencies(k)
-    }
-    packs_to_delete_validated = {
-        i
-        for i in packs_to_delete
-        if i not in packs_not_to_delete
-    }
-    for pack in (packs_to_delete - packs_to_delete_validated):
-        dependency_in = {
-            p
-            for p, k in dists_dict.items()
-            if pack in get_dependencies(k)
-        }
-        print_verbose(f"> The module {pack} can not be uninstalled because it is required by the modules: {', '.join(dependency_in)}", verbose=verbose)
+    packs_to_delete_validated = list()
+    for pack in packs_to_delete:
+        dependentes = dists_dict[pack][1]
+        if len(dependentes) == 0 or len(dependentes - set(packs_to_delete_validated)) == 0:
+            packs_to_delete_validated.append(pack)
     
-    return list(packs_to_delete_validated)
+    packs_not_delete = list(set(packs_to_delete) - set(packs_to_delete_validated))
+    packs_not_delete.sort(key=lambda x: len(dists_dict[x][0]), reverse=True)
+    for pack in packs_not_delete:
+        print_verbose(f"> The module {pack} can not be uninstalled because it is required by modules that wont be uninstalled: {', '.join(dists_dict[pack][1]-set(packs_to_delete_validated))}", verbose=verbose)
+    packs_to_delete_validated.sort(key=lambda x: len(dists_dict[x][0]), reverse=True)
+    return packs_to_delete_validated
 
 def uninstall_packages(packages: list[str], commit:bool):
     if not packages:
