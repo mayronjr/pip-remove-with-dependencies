@@ -2,8 +2,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="autoremove",
-    version="0.1.1",
+    name="auto_remove_with_dependencies",
+    version="0.1.2",
     author="Mayron Moura Soares Junior",
     author_email="mayronjunior5@gmail.com",
     description="A pip auxiliar that uninstall the packages passed and its unused dependencies.",
@@ -13,7 +13,7 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "autoremove = autoremove.__main__:main"
+            "auto_remove_with_dependencies = autoauto_remove_with_dependenciesremove.__main__:main"
         ]
     },
     python_requires=">=3.9",
