@@ -7,7 +7,7 @@ from . import __version__  # importa a versão
 
 BLOCKED_PACKAGES = {'pip', 'setuptools', 'autoremove'}
 
-def print_verbose(*values:str, verbose:bool=False):
+def print_verbose(*values:object, verbose:bool=False):
     if verbose:
         print(*values)
 
@@ -28,7 +28,7 @@ def get_dependencies(dist: pkg_resources.DistInfoDistribution) -> set[str]:
 
 def find_depenencies_to_uninstall(targets: list, verbose:bool=False):
     dists_dict = get_installed_distributions()
-    packs_to_delete = []
+    packs_to_delete = set()
     packs_to_validate = [t for t in targets]
     print_verbose(f"Receive the following list of Modules to uninstall with dependencies:", ', '.join(packs_to_validate), verbose=verbose)
     while packs_to_validate:
@@ -45,29 +45,36 @@ def find_depenencies_to_uninstall(targets: list, verbose:bool=False):
             continue
         dist = dists_dict[pack]
         dependencies = get_dependencies(dist)
-        if len(dependencies) == 0:
-            print_verbose(f"  No depedencies found.", verbose=verbose)
-            continue
-        print_verbose(f"  Found the following dependencies:", ", ".join(dependencies), verbose=verbose)
-        print_verbose(f"  Adding them to the validation List", verbose=verbose)
+        if len(dependencies) != 0:
+            print_verbose(f"  Found the following dependencies:", ", ".join(dependencies), verbose=verbose)
+            print_verbose(f"  Adding them to the validation List", verbose=verbose)
         packs_to_validate += dependencies
-        packs_to_delete.append((pack, dependencies))
+        packs_to_delete.add(pack)
+    print_verbose("Dependencies analysed. Verifying what can be uninstalled.", verbose=verbose)
     packs_not_to_delete = {
         dep
         for p, k in dists_dict.items()
-        if p not in [pack[0] for pack in packs_to_delete]
+        if p not in packs_to_delete
         for dep in get_dependencies(k)
     }
-    packs_to_delete = [
+    packs_to_delete_validated = {
         i
         for i in packs_to_delete
-        if i[0] not in packs_not_to_delete
-    ]
+        if i not in packs_not_to_delete
+    }
+    for pack in (packs_to_delete - packs_to_delete_validated):
+        dependency_in = {
+            p
+            for p, k in dists_dict.items()
+            if pack in get_dependencies(k)
+        }
+        print_verbose(f"> The module {pack} can not be uninstalled because it is required by the modules: {', '.join(dependency_in)}", verbose=verbose)
     
-    return [pack for (pack, _) in packs_to_delete]
+    return list(packs_to_delete_validated)
 
 def uninstall_packages(packages: list[str], commit:bool):
     if not packages:
+        print(f"No modules to uninstall.")
         return
     if not commit:
         print(f"[Dry run] To delete, use --commit")

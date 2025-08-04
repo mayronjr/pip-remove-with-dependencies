@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="auto_remove_with_dependencies",
-    version="0.1.3",
+    version="0.2.0",
     author="Mayron Moura Soares Junior",
     license="MIT",
     author_email="mayronjunior5@gmail.com",
@@ -14,7 +14,7 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "auto_remove_with_dependencies = auto_remove_with_dependencies.__main__:main"
+            "auto_remove = auto_remove_with_dependencies.__main__:main"
         ]
     },
     python_requires=">=3.9",
