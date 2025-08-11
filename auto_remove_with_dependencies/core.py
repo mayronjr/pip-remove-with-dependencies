@@ -35,6 +35,7 @@ def find_depenencies_to_uninstall(targets: list, verbose:bool=False):
     dists_dict = get_installed_distributions()
     packs_to_delete = []
     packs_to_validate = [t for t in targets]
+    # TODO Validate infinite loops of modules that for some reason terminate requiring itself
     print_verbose(f"Receive the following list of Modules to uninstall with dependencies:", ', '.join(packs_to_validate), verbose=verbose)
     while packs_to_validate:
         pack = packs_to_validate.pop()
