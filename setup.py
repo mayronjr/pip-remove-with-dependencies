@@ -10,7 +10,7 @@ setup(
     description="A pip auxiliar that uninstall the packages passed and its unused dependencies.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    # url="No git yet",
+    url="https://github.com/mayronjr/pip-remove-with-dependencies",
     packages=find_packages(),
     install_requires=[
         "packaging>=20.0",
