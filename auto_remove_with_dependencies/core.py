@@ -5,21 +5,24 @@ import subprocess
 
 from importlib.metadata import Distribution, distributions
 from packaging.requirements import Requirement
+from packaging.utils import canonicalize_name
 
 def print_verbose(*values, verbose:bool=False):
     if verbose:
         print(*values)
 
 def get_installed_distributions() -> dict[str, tuple[set[str], set[str]]]:
-    dists = distributions()
-    dists = {
-        dist.metadata['Name'].lower(): dist.requires or []
-        for dist in dists
+    dists_raw = {
+        canonicalize_name(dist.metadata['Name']): dist.requires or []
+        for dist in distributions()
         if 'Name' in dist.metadata
     }
     dists = {
-        dist_name: {Requirement(d).name.lower() for d in dist_requiments}.intersection(dists.keys())
-        for dist_name, dist_requiments in dists.items()
+        dist_name: {
+            canonicalize_name(Requirement(req).name)
+            for req in reqs
+        }.intersection(dists_raw.keys()) - {dist_name}
+        for dist_name, reqs in dists_raw.items()
     }
     new_dists = {}
     for modulo, requeriments in dists.items():
@@ -35,7 +38,7 @@ def find_depenencies_to_uninstall(targets: list, verbose:bool=False):
     dists_dict = get_installed_distributions()
     packs_to_delete = []
     packs_to_validate = [t for t in targets]
-    # TODO Validate infinite loops of modules that for some reason terminate requiring itself
+    packs_already_validated = set()
     print_verbose(f"Receive the following list of Modules to uninstall with dependencies:", ', '.join(packs_to_validate), verbose=verbose)
     while packs_to_validate:
         pack = packs_to_validate.pop()
@@ -53,13 +56,17 @@ def find_depenencies_to_uninstall(targets: list, verbose:bool=False):
         if len(requirements) != 0:
             print_verbose(f"  Found the following requirements:", ", ".join(requirements), verbose=verbose)
             print_verbose(f"  Adding them to the validation List", verbose=verbose)
-        packs_to_validate += (requirements - set(packs_to_validate))
+        packs_to_validate += (requirements - set(packs_to_validate) - packs_already_validated)
         packs_to_delete.append(pack)
+        packs_already_validated.add(pack)
+    packs_to_delete = list(set(packs_to_delete))
+    packs_to_delete.sort(key=lambda x: len(dists_dict[x][0]), reverse=True)
+    print_verbose(f"The following modules have been picked for uninstaling: {', '.join(packs_to_delete)}", verbose=verbose)
     print_verbose("Dependencies analysed. Verifying what can be uninstalled.", verbose=verbose)
     packs_to_delete_validated = list()
     for pack in packs_to_delete:
         dependentes = dists_dict[pack][1]
-        if len(dependentes) == 0 or len(dependentes - set(packs_to_delete_validated)) == 0:
+        if len(dependentes) == 0 or len(dependentes - set(packs_to_delete_validated) - set(packs_to_delete)) == 0:
             packs_to_delete_validated.append(pack)
     
     packs_not_delete = list(set(packs_to_delete) - set(packs_to_delete_validated))
